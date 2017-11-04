@@ -1,5 +1,7 @@
 package com.workshop.rxjava.weather.services;
 
+import com.workshop.rxjava.weather.model.WeatherCondition;
+
 public interface WeatherService {
-    Float getWeather(String city);
+    WeatherCondition getWeather(String city);
 }
