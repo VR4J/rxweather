@@ -22,6 +22,6 @@ public class WeatherCondition {
 
     @Override
     public String toString() {
-        return "Temperature: " + this.temperature + " text: " + this.text;
+        return "Temperature: " + this.temperature + "\n\tText: " + this.text;
     }
 }
