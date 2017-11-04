@@ -29,6 +29,7 @@ public class WeatherStationController {
         );
 
         Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle).toObservable();
+
         Float avg = combined.map(WeatherCondition::getTemperature)
                 .reduce(0.0f,
                         (x, y) -> x + y
@@ -39,10 +40,9 @@ public class WeatherStationController {
                 .blockingGet();
 
         String text = combined.map(WeatherCondition::getText)
-                .reduce("",
-                        (x, y) -> x + " / " + y
-                )
-                .blockingGet();
+                .buffer(2)
+                .map(strings -> String.join(" / ", strings))
+                .blockingFirst();
 
         return new WeatherCondition(text, avg);
     }
