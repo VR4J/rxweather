@@ -19,4 +19,9 @@ public class WeatherCondition {
     public Float getTemperature() {
         return temperature;
     }
+
+    @Override
+    public String toString() {
+        return "Temperature: " + this.temperature + " text: " + this.text;
+    }
 }
