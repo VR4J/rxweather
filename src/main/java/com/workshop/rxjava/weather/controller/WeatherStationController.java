@@ -5,6 +5,7 @@ import com.workshop.rxjava.weather.services.OpenWeatherMapService;
 import com.workshop.rxjava.weather.services.YahooWeatherService;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
 public class WeatherStationController {
 
@@ -28,23 +29,23 @@ public class WeatherStationController {
                 () -> openWeatherMap.getWeather(city)
         );
 
-        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle).toObservable();
+        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle).toObservable()
+                .subscribeOn(Schedulers.io());
 
-        Float avg = combined.map(WeatherCondition::getTemperature)
+        Single<Float> avg = combined.map(WeatherCondition::getTemperature)
                 .reduce(0.0f,
                         (x, y) -> x + y
                 )
-                .map(
-                        (x) -> x / 2
-                )
-                .blockingGet();
+                .map(x -> x / 2);
 
-        String text = combined.map(WeatherCondition::getText)
+        Single<String> text = combined.map(WeatherCondition::getText)
                 .buffer(2)
-                .map(strings -> String.join(" / ", strings))
-                .blockingFirst();
+                .map(strings -> String.join(" / ", strings)).singleOrError();
 
-        return new WeatherCondition(text, avg);
+        // TODO
+        Single<WeatherCondition> condition = Single.merge(avg, text);
+
+        return condition.blockingGet();
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
