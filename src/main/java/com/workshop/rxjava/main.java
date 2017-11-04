@@ -17,5 +17,9 @@ public class main {
 
 
         // Get Weather Report using Reactive Java
+        WeatherCondition condition3 = controller.getCombinedWeatherReportRx("Weert");
+
+        System.out.println("Weather report for Weert:");
+        System.out.println("\t" + condition3);
     }
 }

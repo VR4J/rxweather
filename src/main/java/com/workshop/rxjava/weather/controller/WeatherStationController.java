@@ -3,6 +3,8 @@ package com.workshop.rxjava.weather.controller;
 import com.workshop.rxjava.weather.model.WeatherCondition;
 import com.workshop.rxjava.weather.services.OpenWeatherMapService;
 import com.workshop.rxjava.weather.services.YahooWeatherService;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public class WeatherStationController {
 
@@ -15,6 +17,34 @@ public class WeatherStationController {
     public WeatherStationController() {
         openWeatherMap = new OpenWeatherMapService();
         yahooWeather = new YahooWeatherService();
+    }
+
+    public WeatherCondition getCombinedWeatherReportRx(String city){
+        Single<WeatherCondition> yahooWeatherSingle = Single.fromCallable(
+                () -> yahooWeather.getWeather(city)
+        );
+
+        Single<WeatherCondition> openWeatherSingle = Single.fromCallable(
+                () -> openWeatherMap.getWeather(city)
+        );
+
+        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle).toObservable();
+        Float avg = combined.map(WeatherCondition::getTemperature)
+                .reduce(0.0f,
+                        (x, y) -> x + y
+                )
+                .map(
+                        (x) -> x / 2
+                )
+                .blockingGet();
+
+        String text = combined.map(WeatherCondition::getText)
+                .reduce("",
+                        (x, y) -> x + " / " + y
+                )
+                .blockingGet();
+
+        return new WeatherCondition(text, avg);
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
