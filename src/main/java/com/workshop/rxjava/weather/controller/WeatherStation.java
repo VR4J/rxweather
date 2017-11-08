@@ -19,6 +19,18 @@ public class WeatherStation {
         yahooWeather = new YahooWeatherService();
     }
 
+    public Single<WeatherCondition> getCombinedWeatherReportRxAsync(String city){
+        Single<WeatherCondition> ywSingle = Single.fromCallable(() -> yahooWeather.getWeather(city))
+                .subscribeOn(Schedulers.newThread());
+
+        Single<WeatherCondition> owSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city))
+                .subscribeOn(Schedulers.newThread());
+
+        return Single
+                .zip(owSingle, ywSingle, this::combineWeatherConditions)
+                .subscribeOn(Schedulers.io());
+    }
+
     public Single<WeatherCondition> getCombinedWeatherReportRx(String city){
         Single<WeatherCondition> ywSingle = Single.fromCallable(() -> yahooWeather.getWeather(city));
         Single<WeatherCondition> owSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city));
@@ -26,13 +38,6 @@ public class WeatherStation {
         return Single
                 .zip(owSingle, ywSingle, this::combineWeatherConditions)
                 .subscribeOn(Schedulers.io());
-    }
-
-    private WeatherCondition combineWeatherConditions(WeatherCondition x, WeatherCondition y) {
-        float avg = (x.getTemperature() + y.getTemperature()) / 2;
-        String desc = String.format("%s / %s", x.getText(), y.getText());
-
-        return new WeatherCondition(desc, avg);
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
@@ -56,5 +61,12 @@ public class WeatherStation {
         WeatherCondition yahooWeatherCondition = yahooWeather.getWeather(city);
 
         return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
+    }
+
+    private WeatherCondition combineWeatherConditions(WeatherCondition x, WeatherCondition y) {
+        float avg = (x.getTemperature() + y.getTemperature()) / 2;
+        String desc = String.format("%s / %s", x.getText(), y.getText());
+
+        return new WeatherCondition(desc, avg);
     }
 }
