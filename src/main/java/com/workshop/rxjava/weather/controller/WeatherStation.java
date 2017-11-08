@@ -3,7 +3,6 @@ package com.workshop.rxjava.weather.controller;
 import com.workshop.rxjava.weather.model.WeatherCondition;
 import com.workshop.rxjava.weather.services.OpenWeatherMapService;
 import com.workshop.rxjava.weather.services.YahooWeatherService;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
@@ -37,21 +36,8 @@ public class WeatherStation {
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
-        Thread t1 = new Thread(
-                () -> {
-                    System.out.println("[YahooWeather] Fetching .. ");
-                    yahooWeatherCondition = yahooWeather.getWeather(city);
-                    System.out.println("[YahooWeather] Done");
-                }
-        );
-
-        Thread t2 = new Thread(
-                () -> {
-                    System.out.println("[OpenWeather] Fetching .. ");
-                    openWeatherCondition = openWeatherMap.getWeather(city);
-                    System.out.println("[OpenWeather] Done");
-                }
-        );
+        Thread t1 = new Thread(() -> openWeatherCondition = openWeatherMap.getWeather(city));
+        Thread t2 = new Thread(() -> yahooWeatherCondition = yahooWeather.getWeather(city));
 
         try {
             t1.start();
@@ -62,10 +48,7 @@ public class WeatherStation {
             e.printStackTrace();
         }
 
-        Float avg = (openWeatherCondition.getTemperature() + yahooWeatherCondition.getTemperature()) / 2;
-        String text = String.format("%s / %s", openWeatherCondition.getText(), yahooWeatherCondition.getText());
-
-        return new WeatherCondition(text, avg);
+        return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
     }
 
     public WeatherCondition getCombinedWeatherReport(String city){
