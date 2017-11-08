@@ -1,6 +1,5 @@
 package com.workshop.rxjava.weather.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workshop.rxjava.weather.model.WeatherCondition;
@@ -24,6 +23,8 @@ public class YahooWeatherService implements WeatherService {
     }
 
     public WeatherCondition getWeather(String city) {
+        System.out.println("[ Yahoo ] Getting weather! - " + Thread.currentThread().getName());
+
         int defaultVal = -1;
         final Integer woeid = cities.getOrDefault(city,defaultVal);
 
@@ -49,6 +50,8 @@ public class YahooWeatherService implements WeatherService {
 
             Float temp = Float.parseFloat(cond.get("temp").asText());
             String text = cond.get("text").asText();
+
+            System.out.println("[ Yahoo ] Done! - " + Thread.currentThread().getName());
 
             return new WeatherCondition(text, temp);
         } catch (IOException e) {

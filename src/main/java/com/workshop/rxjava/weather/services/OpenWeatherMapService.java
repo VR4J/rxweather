@@ -26,6 +26,8 @@ public class OpenWeatherMapService implements WeatherService{
 
     @Override
     public WeatherCondition getWeather(String city) {
+        System.out.println("[ Open Weather ] Getting weather! - " + Thread.currentThread().getName());
+
         int defaultVal = -1;
         final Integer woeid = cities.getOrDefault(city,defaultVal);
 
@@ -42,7 +44,6 @@ public class OpenWeatherMapService implements WeatherService{
             String jsonString = EntityUtils.toString(entity);
 
             ObjectMapper mapper = new ObjectMapper();
-
             JsonNode json = mapper.readTree(jsonString);
 
             JsonNode weather = json.get("weather");
@@ -50,6 +51,8 @@ public class OpenWeatherMapService implements WeatherService{
 
             String text = weather.get(0).get("main").asText();
             Float temp = main.get("temp").floatValue();
+
+            System.out.println("[ Open Weather ] Done! - " + Thread.currentThread().getName());
 
             return new WeatherCondition(text, temp);
 
