@@ -6,10 +6,6 @@ import com.workshop.rxjava.weather.services.YahooWeatherService;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.*;
-
 public class WeatherStation {
 
     private YahooWeatherService yahooWeather;
@@ -54,7 +50,7 @@ public class WeatherStation {
 
         return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
     }
-    
+
     public WeatherCondition getCombinedWeatherReport(String city){
         WeatherCondition openWeatherCondition = openWeatherMap.getWeather(city);
         WeatherCondition yahooWeatherCondition = yahooWeather.getWeather(city);
