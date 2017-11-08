@@ -12,10 +12,10 @@ public class main {
         WeatherCondition condition2 = controller.getCombinedWeatherReport("Weert");
 
         System.out.println("Weather report for Weert:");
-        System.out.println("\t" + condition1);
+        System.out.println(condition1);
 
-        System.out.println("MultiWeather report for Weert:");
-        System.out.println("\t" + condition2);
+        System.out.println("MultiThreadedWeather report for Weert:");
+        System.out.println(condition2);
 
         // Get Weather Report using Reactive Java
         WeatherCondition condition3 = controller
@@ -23,6 +23,6 @@ public class main {
                 .blockingGet();
 
         System.out.println("Weather report for Weert:");
-        System.out.println("\t" + condition3);
+        System.out.println(condition3);
     }
 }

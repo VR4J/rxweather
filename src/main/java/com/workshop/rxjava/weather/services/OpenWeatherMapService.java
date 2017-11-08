@@ -52,7 +52,6 @@ public class OpenWeatherMapService implements WeatherService{
             Float temp = main.get("temp").floatValue();
 
             return new WeatherCondition(text, temp);
-
         } catch (IOException e) {
             e.printStackTrace();
         }

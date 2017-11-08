@@ -7,6 +7,10 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
+
 public class WeatherStation {
 
     private YahooWeatherService yahooWeather;
@@ -37,21 +41,8 @@ public class WeatherStation {
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
-        Thread t1 = new Thread(
-                () -> {
-                    System.out.println("[YahooWeather] Fetching .. ");
-                    yahooWeatherCondition = yahooWeather.getWeather(city);
-                    System.out.println("[YahooWeather] Done");
-                }
-        );
-
-        Thread t2 = new Thread(
-                () -> {
-                    System.out.println("[OpenWeather] Fetching .. ");
-                    openWeatherCondition = openWeatherMap.getWeather(city);
-                    System.out.println("[OpenWeather] Done");
-                }
-        );
+        Thread t1 = new Thread(() -> yahooWeatherCondition = yahooWeather.getWeather(city));
+        Thread t2 = new Thread(() -> openWeatherCondition = openWeatherMap.getWeather(city));
 
         try {
             t1.start();
@@ -69,10 +60,7 @@ public class WeatherStation {
     }
 
     public WeatherCondition getCombinedWeatherReport(String city){
-        openWeatherMap = new OpenWeatherMapService();
         WeatherCondition openWeatherCondition = openWeatherMap.getWeather(city);
-
-        yahooWeather = new YahooWeatherService();
         WeatherCondition yahooWeatherCondition = yahooWeather.getWeather(city);
 
         Float avg = (openWeatherCondition.getTemperature() + yahooWeatherCondition.getTemperature()) / 2;
@@ -80,5 +68,4 @@ public class WeatherStation {
 
         return new WeatherCondition(text, avg);
     }
-
 }
