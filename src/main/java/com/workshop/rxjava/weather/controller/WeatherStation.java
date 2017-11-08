@@ -51,17 +51,13 @@ public class WeatherStation {
         return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
     }
 
-    public WeatherCondition getCombinedWeatherReport(String city){
+    public WeatherCondition getCombinedWeatherReport(String city) {
         openWeatherMap = new OpenWeatherMapService();
         WeatherCondition openWeatherCondition = openWeatherMap.getWeather(city);
 
         yahooWeather = new YahooWeatherService();
         WeatherCondition yahooWeatherCondition = yahooWeather.getWeather(city);
 
-        Float avg = (openWeatherCondition.getTemperature() + yahooWeatherCondition.getTemperature()) / 2;
-        String text = String.format("%s / %s", openWeatherCondition.getText(), yahooWeatherCondition.getText());
-
-        return new WeatherCondition(text, avg);
+        return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
     }
-
 }
