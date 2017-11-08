@@ -21,23 +21,19 @@ public class WeatherStation {
     }
 
     public Single<WeatherCondition> getCombinedWeatherReportRx(String city){
-        Single<WeatherCondition> yahooWeatherSingle = Single.fromCallable(() -> yahooWeather.getWeather(city));
-        Single<WeatherCondition> openWeatherSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city));
+        Single<WeatherCondition> ywSingle = Single.fromCallable(() -> yahooWeather.getWeather(city));
+        Single<WeatherCondition> owSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city));
 
-        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle)
-                .toObservable()
+        return Single
+                .zip(owSingle, ywSingle, this::combineWeatherConditions)
                 .subscribeOn(Schedulers.io());
+    }
 
-        Single<Float> avg = combined.map(WeatherCondition::getTemperature)
-                .reduce(0.0f, (x, y) -> x + y)
-                .map(x -> x / 2);
+    private WeatherCondition combineWeatherConditions(WeatherCondition x, WeatherCondition y) {
+        float avg = (x.getTemperature() + y.getTemperature()) / 2;
+        String desc = String.format("%s / %s", x.getText(), y.getText());
 
-        Single<String> text = combined
-                .map(WeatherCondition::getText)
-                .buffer(2)
-                .map(strings -> String.join(" / ", strings)).singleOrError();
-
-        return Single.zip(avg, text, (temp, desc) -> new WeatherCondition(desc, temp));
+        return new WeatherCondition(desc, avg);
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
