@@ -55,7 +55,6 @@ public class OpenWeatherMapService implements WeatherService{
             System.out.println("[ Open Weather ] Done! - " + Thread.currentThread().getName());
 
             return new WeatherCondition(text, temp);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
