@@ -6,6 +6,10 @@ import com.workshop.rxjava.weather.services.YahooWeatherService;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class WeatherStation {
 
     private YahooWeatherService yahooWeather;
@@ -40,18 +44,14 @@ public class WeatherStation {
                 .subscribeOn(Schedulers.io());
     }
 
-    public WeatherCondition getCombinedWeatherReportAsync(String city){
-        Thread t1 = new Thread(() -> openWeatherCondition = openWeatherMap.getWeather(city));
-        Thread t2 = new Thread(() -> yahooWeatherCondition = yahooWeather.getWeather(city));
+    public WeatherCondition getCombinedWeatherReportAsync(String city) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
 
-        try {
-            t1.start();
-            t2.start();
-            t1.join();
-            t2.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        executor.submit(() -> openWeatherCondition = openWeatherMap.getWeather(city));
+        executor.submit(() -> yahooWeatherCondition = yahooWeather.getWeather(city));
+
+        executor.shutdown(); //do not accept more tasks
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
         return combineWeatherConditions(openWeatherCondition, yahooWeatherCondition);
     }

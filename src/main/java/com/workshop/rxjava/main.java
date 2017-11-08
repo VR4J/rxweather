@@ -4,7 +4,7 @@ import com.workshop.rxjava.weather.controller.WeatherStation;
 import com.workshop.rxjava.weather.model.WeatherCondition;
 
 public class main {
-    public static void main(String [] args) {
+    public static void main(String [] args) throws InterruptedException {
         WeatherStation controller = new WeatherStation();
 
         System.out.println("------- Getting Sync ------");
