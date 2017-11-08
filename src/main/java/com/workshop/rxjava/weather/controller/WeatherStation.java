@@ -7,7 +7,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-public class WeatherStationController {
+public class WeatherStation {
 
     private YahooWeatherService yahooWeather;
     private OpenWeatherMapService openWeatherMap;
@@ -15,37 +15,29 @@ public class WeatherStationController {
     private static WeatherCondition openWeatherCondition;
     private static WeatherCondition yahooWeatherCondition;
 
-    public WeatherStationController() {
+    public WeatherStation() {
         openWeatherMap = new OpenWeatherMapService();
         yahooWeather = new YahooWeatherService();
     }
 
-    public WeatherCondition getCombinedWeatherReportRx(String city){
-        Single<WeatherCondition> yahooWeatherSingle = Single.fromCallable(
-                () -> yahooWeather.getWeather(city)
-        );
+    public Single<WeatherCondition> getCombinedWeatherReportRx(String city){
+        Single<WeatherCondition> yahooWeatherSingle = Single.fromCallable(() -> yahooWeather.getWeather(city));
+        Single<WeatherCondition> openWeatherSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city));
 
-        Single<WeatherCondition> openWeatherSingle = Single.fromCallable(
-                () -> openWeatherMap.getWeather(city)
-        );
-
-        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle).toObservable()
+        Observable<WeatherCondition> combined = Single.merge(openWeatherSingle, yahooWeatherSingle)
+                .toObservable()
                 .subscribeOn(Schedulers.io());
 
         Single<Float> avg = combined.map(WeatherCondition::getTemperature)
-                .reduce(0.0f,
-                        (x, y) -> x + y
-                )
+                .reduce(0.0f, (x, y) -> x + y)
                 .map(x -> x / 2);
 
-        Single<String> text = combined.map(WeatherCondition::getText)
+        Single<String> text = combined
+                .map(WeatherCondition::getText)
                 .buffer(2)
                 .map(strings -> String.join(" / ", strings)).singleOrError();
 
-        // TODO
-        Single<WeatherCondition> condition = Single.merge(avg, text);
-
-        return condition.blockingGet();
+        return Single.zip(avg, text, (temp, desc) -> new WeatherCondition(desc, temp));
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city){
