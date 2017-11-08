@@ -25,23 +25,19 @@ public class WeatherStation {
 
     public Single<WeatherCondition> getCombinedWeatherReportRxAsync(String city){
         Single<WeatherCondition> ywSingle = Single.fromCallable(() -> yahooWeather.getWeather(city))
-                .subscribeOn(Schedulers.newThread());
+                .subscribeOn(Schedulers.io());
 
         Single<WeatherCondition> owSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city))
-                .subscribeOn(Schedulers.newThread());
-
-        return Single
-                .zip(owSingle, ywSingle, this::combineWeatherConditions)
                 .subscribeOn(Schedulers.io());
+
+        return Single.zip(owSingle, ywSingle, this::combineWeatherConditions);
     }
 
     public Single<WeatherCondition> getCombinedWeatherReportRx(String city){
         Single<WeatherCondition> ywSingle = Single.fromCallable(() -> yahooWeather.getWeather(city));
         Single<WeatherCondition> owSingle = Single.fromCallable(() -> openWeatherMap.getWeather(city));
 
-        return Single
-                .zip(owSingle, ywSingle, this::combineWeatherConditions)
-                .subscribeOn(Schedulers.io());
+        return Single.zip(owSingle, ywSingle, this::combineWeatherConditions);
     }
 
     public WeatherCondition getCombinedWeatherReportAsync(String city) throws InterruptedException {
